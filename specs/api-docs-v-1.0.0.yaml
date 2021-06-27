@@ -1,0 +1,591 @@
+openapi: 3.0.3
+info:
+  title: TodoServer API
+  description: The API-Docs for the v1-Api of the todoserver
+  version: 1.0.0
+servers:
+  - url: 'https://api.todoserver.com/v1'
+    description: Production Server
+tags:
+  - name: Auth
+  - name: Board
+  - name: Collaborator
+  - name: Task
+paths:
+  /register:
+    post:
+      description: Route to create a new User.
+      tags:
+        - Auth
+      requestBody:
+        $ref: '#/components/requestBodies/registerBody'
+      responses:
+        201:
+          description: User has successfully created and is now able to log in with the previously used login data.
+        422:
+          $ref: '#/components/responses/validationError'
+  /login:
+    post:
+      description: Route to sign an existing user in.
+      tags:
+        - Auth
+      requestBody:
+        $ref: '#/components/requestBodies/loginBody'
+      responses:
+        200:
+          $ref: '#/components/responses/successfullLogin'
+        401:
+          $ref: '#/components/responses/loginDataIncorrect'
+  /boards:
+    get:
+      description: Returns all Boards which the user has access to.
+      security: 
+      - jwtAuth: []
+      tags:
+        - Board
+      responses:
+        200:
+          $ref: '#/components/responses/userBoards'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+    post:
+      description: Create a new board
+      security: 
+        - jwtAuth: []
+      tags:
+        - Board
+      requestBody:
+        $ref: '#/components/requestBodies/createBoardBody'
+      responses:
+        201:
+          description: The new board has been created.
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - $ref: '#/components/schemas/Board'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+  /boards/{id}:
+    get:
+      description: Get all tasks and details from the given board.
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+      security: 
+      - jwtAuth: []
+      tags:
+        - Board
+      responses:
+        200:
+          description: Returns the details of a board with all tasks.
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - $ref: '#/components/schemas/BoardDetail'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: The board has not been found.
+    patch:
+      description: Update board details.
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+      tags:
+        - Board
+      security: 
+      - jwtAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/updateBoardBody'
+      responses:
+        200:
+          description: The board details has been updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - $ref: '#/components/schemas/BoardDetail'
+        404:
+          description: The board has not been found.
+    delete:
+      description: Delete a board. This is only possible when the authentificated user is the owner.
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+      tags:
+        - Board
+      security: 
+      - jwtAuth: []
+      responses:
+        200:
+          description: The board has been removed from the database.
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: The board has not been found.
+  /boards/{id}/collaborator:
+    get:
+      description: Get a list of all collaborators of a board.
+      parameters:
+        - $ref: '#/components/parameters/boardId'
+      tags:
+        - Collaborator
+      security: 
+      - jwtAuth: []
+      responses:
+        200:
+          description: Returns all collaborators.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                   $ref: '#/components/schemas/User'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board not found.
+  
+  /boards/{id}/collaborator/{userId}:
+    post:
+      description: Add a new Collaborator to a board. Can only be done by collaborator
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+        - $ref: '#/components/parameters/userId'
+      tags:
+        - Collaborator
+      security: 
+      - jwtAuth: []
+      responses:
+        200:
+          description: Collaborator added.
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board not found
+    delete:
+      description: Remove an collaborator.
+      parameters:
+        - $ref: '#/components/parameters/boardId'
+        - $ref: '#/components/parameters/userId'
+      tags:
+        - Collaborator
+      security: 
+        - jwtAuth: []
+      responses:
+        200:
+          description: User has been removed as collaborator
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board or User not found.
+  /boards/{id}/task:
+    get:
+      description: Get all Tasks for a board.
+      security: 
+      - jwtAuth: []
+      tags: 
+        - Task
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+      responses:
+        200:
+          $ref: '#/components/responses/userBoards'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board not found.
+    post:
+      description: Create a new Task
+      security: 
+      - jwtAuth: []
+      tags: 
+        - Task
+      parameters:
+        - $ref: '#/components/parameters/boardId'
+      responses:
+        201:
+          description: Task has been created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          $ref: '#/components/responses/validationError'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board not found.
+  /boards/{id}/task/{taskId}:
+    get:
+      description: Get a task by id.
+      security: 
+      - jwtAuth: []
+      tags:
+        - Task
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+        - $ref: '#/components/parameters/taskId'
+      responses:
+        200:
+          $ref: '#/components/responses/taskResponse'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Task not found.
+    put:
+      description: Update task by id.
+      security: 
+      - jwtAuth: []
+      tags: 
+        - Task
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+        - $ref: '#/components/parameters/taskId'
+      requestBody:
+        $ref: '#/components/requestBodies/updateTaskBody'
+      responses:
+        200:
+          $ref: '#/components/responses/taskResponse'
+        401:
+          $ref: '#/components/responses/validationError'
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board or Task has not been found.
+    delete:
+      description: Delete the task by id.
+      security: 
+      - jwtAuth: []
+      tags:
+        - Task
+      parameters: 
+        - $ref: '#/components/parameters/boardId'
+        - $ref: '#/components/parameters/taskId'
+      responses:
+        200:
+          description: The task has been deleted.
+        403:
+          $ref: '#/components/responses/notAuthorized'
+        404:
+          description: Board or Task not found.
+      
+components:
+  schemas:
+    Board:
+      title: Board
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        owner:
+          type: number
+        description:
+          type: string
+      example: 
+        id: 12
+        name: My very good project
+        owner: 3
+        description: This is my management board for my awesome project.
+    BoardDetail:
+      title: BoardDetail
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          type: number
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+      example:
+        id: 12
+        name: My very good project
+        description: This is my management board for my awesome project.
+        owner: 3
+        tasks: [
+            {
+              id: 45,
+              title: First Task,
+              description: Do this!,
+              boardId: 12,
+              isDone: false,
+              assignee: null
+            },
+            {
+              id: 203,
+              title: Some other Task,
+              description: Do this as well!,
+              boardId: 12,
+              isDone: false,
+              assignee: 3
+            }
+          ]
+    Task:
+      title: Task
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        boardId:
+          type: number
+        isDone:
+          type: boolean
+        assignee:
+          type: object
+          oneOf:
+            - $ref: '#/components/schemas/User'
+        subTask:
+          type: object
+          oneOf:
+            - $ref: '#/components/schemas/Task'
+      example: 
+        id: 45
+        title: First Task
+        description: Do this!
+        boardId: 12
+        isDone: false
+        assignee: null
+    User:
+      title: User
+      type: object
+      properties:
+        id:
+          type: number
+        username:
+          type: string
+        password: 
+          type: string
+        name:
+          type: string
+      required: 
+        - id
+        - username
+        - name
+      example: 
+        id: 44
+        username: john.doe@example.com
+        name: John Doe
+  requestBodies:
+    registerBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              email_confirmation:
+                type: string
+              password:
+                type: string
+              password_confirmation:
+                type: string
+            required:
+              - email
+              - email_confirmation
+              - password
+              - password_confirmation
+          example:
+            email: 'me@mydomain.com'
+            email_confirmation: 'me@mydomain.com'
+            password: 'mySuperSecretPassword01!'
+            password_confirmation: 'mySuperSecretPassword01!'
+    loginBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+            required:
+              - email
+              - password
+            example:
+              email: 'me@mydomain.com'
+              password: 'mySuperSecreatePassword01!'
+    createBoardBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+            required: 
+              - name
+    updateBoardBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+            required: 
+              - name
+    createTaskBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              assignee:
+                type: object
+    updateTaskBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              isDone:
+                type: boolean
+              assignee:
+                type: object
+  responses:
+    validationError:
+      description: If validation errors happens, it will return an array with the errors.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                field:
+                  type: string
+                message:
+                  type: string
+          example: [
+              {
+               field: email,
+                message: Given String is not a valid email address,
+              },
+              {
+                field: password_confirmation,
+                message: The passwords does not match,
+              }
+            ]
+    successfullLogin:
+      description: Login was successfull and the JWT tokens for authentifacting users are issued
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+            example: 
+              token: 7WK5T79u5mIzjIXXi2oI9Fglmgivv7RAJ7izyj9tUyQ
+    loginDataIncorrect:
+      description: The given username/password combination was not correct. Also if the user does not exists. This HTTP Status Code will be returned to not expose if an user is registered or not.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example: 
+            error: The given username and/or password was incorrect. Please try again.
+    notAuthorized:
+      description: The user is not authorized to do this action. This might be because the user is not logged in or has not sufficient permissions.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example: 
+              message: You are not authorized to do this.
+    userBoards:
+      description: Returns all boards where the user has access to.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              anyOf:
+                - $ref: '#/components/schemas/Board'
+    tasksResponse:
+      description: Returns all Tasks of an board.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Task'
+    taskResponse:
+      description: Returns the Task Object
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Task'
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: jwt
+  parameters:
+    boardId:
+      required: true
+      name: id
+      in: path
+      description: Id of the board
+      schema:
+        type: number
+      example: 
+        id: 12
+    userId:
+      required: true
+      name: userId
+      in: path
+      description: Id of the User
+      schema:
+        type: number
+      example: 
+        userId: 4
+    taskId:
+      required: true
+      name: taskId
+      in: path
+      description: Id of the Task
+      schema:
+        type: number
+      example:
+        taskId: 56
