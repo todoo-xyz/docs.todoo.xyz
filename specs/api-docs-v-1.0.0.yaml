@@ -3,6 +3,10 @@ info:
   title: TodoServer API
   description: The API-Docs for the v1-Api of the todoserver
   version: 1.0.0
+  x-logo:
+    url: "images/Logo.png"
+    backgroundColor: "#0F222D"
+    altText: "Logo todoo.xyz"
 servers:
   - url: 'https://api.todoserver.com/v1'
     description: Production Server
@@ -39,7 +43,7 @@ paths:
   /boards:
     get:
       description: Returns all Boards which the user has access to.
-      security: 
+      security:
       - jwtAuth: []
       tags:
         - Board
@@ -50,7 +54,7 @@ paths:
           $ref: '#/components/responses/notAuthorized'
     post:
       description: Create a new board
-      security: 
+      security:
         - jwtAuth: []
       tags:
         - Board
@@ -70,9 +74,9 @@ paths:
   /boards/{id}:
     get:
       description: Get all tasks and details from the given board.
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
-      security: 
+      security:
       - jwtAuth: []
       tags:
         - Board
@@ -91,11 +95,11 @@ paths:
           description: The board has not been found.
     patch:
       description: Update board details.
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
       tags:
         - Board
-      security: 
+      security:
       - jwtAuth: []
       requestBody:
         $ref: '#/components/requestBodies/updateBoardBody'
@@ -112,11 +116,11 @@ paths:
           description: The board has not been found.
     delete:
       description: Delete a board. This is only possible when the authentificated user is the owner.
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
       tags:
         - Board
-      security: 
+      security:
       - jwtAuth: []
       responses:
         200:
@@ -132,7 +136,7 @@ paths:
         - $ref: '#/components/parameters/boardId'
       tags:
         - Collaborator
-      security: 
+      security:
       - jwtAuth: []
       responses:
         200:
@@ -147,16 +151,16 @@ paths:
           $ref: '#/components/responses/notAuthorized'
         404:
           description: Board not found.
-  
+
   /boards/{id}/collaborator/{userId}:
     post:
       description: Add a new Collaborator to a board. Can only be done by collaborator
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
         - $ref: '#/components/parameters/userId'
       tags:
         - Collaborator
-      security: 
+      security:
       - jwtAuth: []
       responses:
         200:
@@ -172,7 +176,7 @@ paths:
         - $ref: '#/components/parameters/userId'
       tags:
         - Collaborator
-      security: 
+      security:
         - jwtAuth: []
       responses:
         200:
@@ -184,11 +188,11 @@ paths:
   /boards/{id}/task:
     get:
       description: Get all Tasks for a board.
-      security: 
+      security:
       - jwtAuth: []
-      tags: 
+      tags:
         - Task
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
       responses:
         200:
@@ -199,9 +203,9 @@ paths:
           description: Board not found.
     post:
       description: Create a new Task
-      security: 
+      security:
       - jwtAuth: []
-      tags: 
+      tags:
         - Task
       parameters:
         - $ref: '#/components/parameters/boardId'
@@ -221,11 +225,11 @@ paths:
   /boards/{id}/task/{taskId}:
     get:
       description: Get a task by id.
-      security: 
+      security:
       - jwtAuth: []
       tags:
         - Task
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
         - $ref: '#/components/parameters/taskId'
       responses:
@@ -237,11 +241,11 @@ paths:
           description: Task not found.
     put:
       description: Update task by id.
-      security: 
+      security:
       - jwtAuth: []
-      tags: 
+      tags:
         - Task
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
         - $ref: '#/components/parameters/taskId'
       requestBody:
@@ -257,11 +261,11 @@ paths:
           description: Board or Task has not been found.
     delete:
       description: Delete the task by id.
-      security: 
+      security:
       - jwtAuth: []
       tags:
         - Task
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/boardId'
         - $ref: '#/components/parameters/taskId'
       responses:
@@ -271,7 +275,7 @@ paths:
           $ref: '#/components/responses/notAuthorized'
         404:
           description: Board or Task not found.
-      
+
 components:
   schemas:
     Board:
@@ -286,7 +290,7 @@ components:
           type: number
         description:
           type: string
-      example: 
+      example:
         id: 12
         name: My very good project
         owner: 3
@@ -352,7 +356,7 @@ components:
           type: object
           oneOf:
             - $ref: '#/components/schemas/Task'
-      example: 
+      example:
         id: 45
         title: First Task
         description: Do this!
@@ -367,15 +371,15 @@ components:
           type: number
         username:
           type: string
-        password: 
+        password:
           type: string
         name:
           type: string
-      required: 
+      required:
         - id
         - username
         - name
-      example: 
+      example:
         id: 44
         username: john.doe@example.com
         name: John Doe
@@ -433,7 +437,7 @@ components:
                 type: string
               description:
                 type: string
-            required: 
+            required:
               - name
     updateBoardBody:
       required: true
@@ -446,7 +450,7 @@ components:
                 type: string
               description:
                 type: string
-            required: 
+            required:
               - name
     createTaskBody:
       required: true
@@ -509,7 +513,7 @@ components:
             properties:
               token:
                 type: string
-            example: 
+            example:
               token: 7WK5T79u5mIzjIXXi2oI9Fglmgivv7RAJ7izyj9tUyQ
     loginDataIncorrect:
       description: The given username/password combination was not correct. Also if the user does not exists. This HTTP Status Code will be returned to not expose if an user is registered or not.
@@ -520,7 +524,7 @@ components:
             properties:
               error:
                 type: string
-          example: 
+          example:
             error: The given username and/or password was incorrect. Please try again.
     notAuthorized:
       description: The user is not authorized to do this action. This might be because the user is not logged in or has not sufficient permissions.
@@ -531,7 +535,7 @@ components:
             properties:
               message:
                 type: string
-            example: 
+            example:
               message: You are not authorized to do this.
     userBoards:
       description: Returns all boards where the user has access to.
@@ -569,7 +573,7 @@ components:
       description: Id of the board
       schema:
         type: number
-      example: 
+      example:
         id: 12
     userId:
       required: true
@@ -578,7 +582,7 @@ components:
       description: Id of the User
       schema:
         type: number
-      example: 
+      example:
         userId: 4
     taskId:
       required: true
