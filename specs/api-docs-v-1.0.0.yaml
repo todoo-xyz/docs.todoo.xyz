@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: TodoServer API
   description: The API-Docs for the v1-Api of the todoserver
-  version: 1.0.0
+  version: 1.0.1
   x-logo:
     url: "images/Logo.png"
     backgroundColor: "#0F222D"
@@ -40,16 +40,15 @@ paths:
           $ref: '#/components/responses/successfullLogin'
         401:
           $ref: '#/components/responses/loginDataIncorrect'
-  /boards:
+  /check:
     get:
-      description: Returns all Boards which the user has access to.
-      security:
-      - jwtAuth: []
+      description: Check with the Bearer Token if the user is signed in and returns the user object.
       tags:
-        - Board
+        - Auth
+      security:
+        - jwtAuth: []
       responses:
         200:
-          $ref: '#/components/responses/userBoards'
         403:
           $ref: '#/components/responses/notAuthorized'
     post:
@@ -370,8 +369,6 @@ components:
         id:
           type: number
         username:
-          type: string
-        password:
           type: string
         name:
           type: string
