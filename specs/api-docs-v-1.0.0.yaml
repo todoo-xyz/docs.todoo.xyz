@@ -49,6 +49,7 @@ paths:
         - jwtAuth: []
       responses:
         200:
+          $ref: '#/components/schemas/User'
         403:
           $ref: '#/components/responses/notAuthorized'
     post:
