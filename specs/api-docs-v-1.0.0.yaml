@@ -8,7 +8,7 @@ info:
     backgroundColor: "#0F222D"
     altText: "Logo todoo.xyz"
 servers:
-  - url: 'https://api.todoserver.com/v1'
+  - url: 'https://api.todoo.xyz/v1'
     description: Production Server
 tags:
   - name: Auth
